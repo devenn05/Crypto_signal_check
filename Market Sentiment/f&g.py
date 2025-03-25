@@ -24,48 +24,31 @@ def get_fear_greed_index():
     return index_value, classification
 
 # Analyze trade based on Fear & Greed Index
-def analyze_trade(symbol, trade_type, interval):
+def analyze_trade(symbol, trade_type):
     current_price = get_current_price(symbol)
-    print(f"\n📢 Current Price of {symbol.upper()}: ${current_price:.2f}")
-
     fear_greed_value, classification = get_fear_greed_index()
-    print(f"\n📊 Fear & Greed Index: {fear_greed_value} ({classification})")
 
-    # Trade Decision Based on New Interpretation
-    print("\n💡 Trade Recommendation:")
+    print(f"\n📢 Current Price of {symbol.upper()}: ${current_price:.2f}")
+    print(f"📊 Fear & Greed Index: {fear_greed_value} ({classification})")
+
+    # Trade Decision Based on Index
     if fear_greed_value <= 25:
-        print("✅ Extreme Fear: Possible BUY opportunity (Long recommended).")
+        sentiment = "🟢 Extreme Fear → Potential Buy Zone"
+        verdict = "✅ YES - Safe to Long" if trade_type == "long" else "❌ NO - Risky to Short"
     elif fear_greed_value >= 75:
-        print("⚠️ Extreme Greed: Possible SELL signal (Short recommended).")
+        sentiment = "🔴 Extreme Greed → Potential Sell Zone"
+        verdict = "✅ YES - Safe to Short" if trade_type == "short" else "❌ NO - Risky to Long"
     else:
-        print("🔶 Neutral Market: Proceed with caution.")
+        sentiment = "🟡 Neutral Market → Proceed with Caution"
+        verdict = "⚠️ No Strong Signal - Trade Carefully"
+
+    # Print Final Analysis
+    print(f"\n💡 Market Sentiment: {sentiment}")
+    print(f"📌 Trade Verdict: {verdict}")
 
 # Get User Inputs
 symbol = input("Enter Crypto Pair (e.g., BTCUSDT): ").strip()
-trade_type = input("Enter Trade Type (Long/Short): ").strip()
-
-# Timeframe Selection
-time_unit = input("Choose Timeframe Unit (Minutes, Hours, Days): ").strip().lower()
-
-if time_unit not in VALID_TIMEFRAMES:
-    print("❌ Invalid timeframe unit. Please enter Minutes, Hours, or Days.")
-    exit()
-
-time_value = input(f"Enter number of {time_unit} (e.g., 5 for 5 {time_unit}): ").strip()
-
-try:
-    time_value = int(time_value)
-except ValueError:
-    print("❌ Invalid number. Please enter a valid integer.")
-    exit()
-
-# Match user input with Binance-supported intervals
-interval = f"{time_value}{time_unit[0]}"  # e.g., 5m for 5 minutes, 4h for 4 hours, 1d for 1 day
-
-# Check if the selected timeframe is valid
-if interval not in VALID_TIMEFRAMES[time_unit]:
-    print(f"❌ {interval} is not a valid timeframe for {time_unit}. Supported: {', '.join(VALID_TIMEFRAMES[time_unit])}")
-    exit()
+trade_type = input("Enter Trade Type (Long/Short): ").strip().lower()
 
 # Run Analysis
-analyze_trade(symbol, trade_type, interval)
+analyze_trade(symbol, trade_type)
