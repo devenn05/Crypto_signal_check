@@ -19,9 +19,9 @@ def get_current_price(symbol):
 def get_fear_greed_index():
     url = "https://api.alternative.me/fng/"
     response = requests.get(url).json()
-    index_value = response["data"][0]["value"]
-    index_classification = response["data"][0]["value_classification"]
-    return int(index_value), index_classification
+    index_value = int(response["data"][0]["value"])
+    classification = response["data"][0]["value_classification"]
+    return index_value, classification
 
 # Analyze trade based on Fear & Greed Index
 def analyze_trade(symbol, trade_type, interval):
@@ -31,20 +31,14 @@ def analyze_trade(symbol, trade_type, interval):
     fear_greed_value, classification = get_fear_greed_index()
     print(f"\n📊 Fear & Greed Index: {fear_greed_value} ({classification})")
 
-    # Trade Decision
+    # Trade Decision Based on New Interpretation
     print("\n💡 Trade Recommendation:")
-    if trade_type.lower() == "long":
-        if fear_greed_value < 30:
-            print("✅ Safe Bet: Market is fearful, potential buying opportunity.")
-        else:
-            print("⚠️ Risky Bet: Market is greedy, possible overbought conditions.")
-    elif trade_type.lower() == "short":
-        if fear_greed_value > 70:
-            print("✅ Safe Bet: Market is greedy, possible shorting opportunity.")
-        else:
-            print("⚠️ Risky Bet: Market is fearful, not ideal for shorting.")
+    if fear_greed_value <= 25:
+        print("✅ Extreme Fear: Possible BUY opportunity (Long recommended).")
+    elif fear_greed_value >= 75:
+        print("⚠️ Extreme Greed: Possible SELL signal (Short recommended).")
     else:
-        print("❌ Invalid trade type. Please enter 'long' or 'short'.")
+        print("🔶 Neutral Market: Proceed with caution.")
 
 # Get User Inputs
 symbol = input("Enter Crypto Pair (e.g., BTCUSDT): ").strip()
