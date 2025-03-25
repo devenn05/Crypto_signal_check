@@ -1,61 +1,78 @@
 import requests
 
-# Function to get current price
+# Binance API Endpoints
+BINANCE_PRICE_API_URL = "https://api.binance.com/api/v3/ticker/price"
+BINANCE_ORDER_BOOK_API_URL = "https://api.binance.com/api/v3/depth"
+
+# Whale Trade Threshold (adjustable)
+WHALE_TRADE_THRESHOLD = 5  # Orders greater than 5 BTC/ETH/etc.
+
 def get_current_price(symbol):
-    url = f"https://api.binance.com/api/v3/ticker/price?symbol={symbol}"
-    response = requests.get(url).json()
-    return float(response["price"])
+    """Fetch the current market price from Binance."""
+    response = requests.get(f"{BINANCE_PRICE_API_URL}?symbol={symbol.upper()}")
+    data = response.json()
+    return float(data["price"])
 
-# Function to get whale activity (large trades from Binance API)
 def get_whale_activity(symbol):
-    url = f"https://api.binance.com/api/v3/depth?symbol={symbol}&limit=500"
-    response = requests.get(url).json()
+    """Fetch whale activity from Binance order book (large buy/sell orders)."""
+    response = requests.get(f"{BINANCE_ORDER_BOOK_API_URL}?symbol={symbol.upper()}&limit=500")
+    data = response.json()
 
-    if "bids" in response and "asks" in response:
+    if "bids" in data and "asks" in data:
         # Extract bid (buy) and ask (sell) orders
-        bids = [(float(price), float(quantity)) for price, quantity in response["bids"]]
-        asks = [(float(price), float(quantity)) for price, quantity in response["asks"]]
+        bids = [(float(price), float(quantity)) for price, quantity in data["bids"]]
+        asks = [(float(price), float(quantity)) for price, quantity in data["asks"]]
 
-        # Define whale trade threshold (e.g., orders > 5 BTC)
-        whale_threshold = 5
-
-        # Count whale orders
-        large_buys = sum(qty for price, qty in bids if qty > whale_threshold)
-        large_sells = sum(qty for price, qty in asks if qty > whale_threshold)
+        # Count whale trades (orders exceeding threshold)
+        large_buys = sum(qty for price, qty in bids if qty > WHALE_TRADE_THRESHOLD)
+        large_sells = sum(qty for price, qty in asks if qty > WHALE_TRADE_THRESHOLD)
 
         return large_buys, large_sells
     return None, None
 
-# User input
-symbol = input("Enter Crypto Symbol (e.g., BTCUSDT, ETHUSDT): ").strip().upper()
-trade_type = input("Did you take a 'long' or 'short' trade? ").strip().lower()
+def evaluate_whale_trade(symbol, trade_side):
+    """Evaluate trade safety based on whale buy/sell pressure."""
+    
+    # Fetch market data
+    current_price = get_current_price(symbol)
+    large_buys, large_sells = get_whale_activity(symbol)
 
-# Fetch data
-current_price = get_current_price(symbol)
-large_buys, large_sells = get_whale_activity(symbol)
+    if large_buys is None:
+        print(f"⚠️ Error fetching whale activity for {symbol}.")
+        return
 
-# Print results
-print(f"\n📊 Whale Activity Analysis for {symbol}")
-print(f"💰 Current Price: ${current_price}")
-print(f"🐋 Large Buy Orders (>5 BTC): {large_buys} BTC")
-print(f"🐋 Large Sell Orders (>5 BTC): {large_sells} BTC")
-
-# Interpretation
-if large_buys is not None:
+    # Whale Activity Analysis
     if large_buys > large_sells:
-        print("✅ More large buy orders → Bullish (Whales are accumulating)")
-        if trade_type == "long":
-            print("🔹 Your long position seems safer based on whale activity.")
-        else:
-            print("⚠️ Your short position may be risky (whales buying).")
+        whale_analysis = "✅ Bullish: Whales are accumulating."
+        safe_long = True
+        safe_short = False
     elif large_sells > large_buys:
-        print("⚠️ More large sell orders → Bearish (Selling pressure increasing)")
-        if trade_type == "short":
-            print("🔹 Your short position seems safer based on whale activity.")
-        else:
-            print("⚠️ Your long position may be risky (whales selling).")
+        whale_analysis = "⚠️ Bearish: Whales are selling aggressively."
+        safe_long = False
+        safe_short = True
     else:
-        print("🤔 Balanced activity → No strong whale signals detected.")
-else:
-    print("⚠️ No whale activity data available.")
+        whale_analysis = "🤔 Neutral: No strong whale signals detected."
+        safe_long = False
+        safe_short = False
 
+    # Trade Verdict
+    if trade_side == "long":
+        verdict = "✅ YES - Safe to Long" if safe_long else "❌ NO - Risky to Long"
+    elif trade_side == "short":
+        verdict = "✅ YES - Safe to Short" if safe_short else "❌ NO - Risky to Short"
+    else:
+        verdict = "❌ Invalid trade side."
+
+    # Print results
+    print(f"\n📊 Whale Activity Analysis for {symbol}")
+    print(f"💰 Current Price: ${current_price:.2f}")
+    print(f"🐋 Large Buy Orders (>5 BTC): {large_buys} BTC")
+    print(f"🐋 Large Sell Orders (>5 BTC): {large_sells} BTC")
+    print(f"📊 {whale_analysis}")
+    print(f"📊 Trade Verdict: {verdict}")
+
+# Example Usage:
+coin = input("Enter Crypto Pair (e.g., BTCUSDT): ").strip().upper()
+trade_side = input("Enter Trade Side (long/short): ").strip().lower()
+
+evaluate_whale_trade(coin, trade_side)
