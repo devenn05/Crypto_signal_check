@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Analysis Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://s3.tradingview.com/tv.js"></script>
+    <style>
+        .coin-slider {
+            display: none;
+            transition: all 0.3s ease;
+        }
+        .coin-slider.active {
+            display: block;
+        }
+        .tradingview-widget-container {
+            height: calc(100vh - 200px);
+            width: 100%;
+        }
+        #tradingview_chart {
+            height: 100%;
+            width: 100%;
+        }
+        .slider-arrow {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .slider-arrow:hover {
+            transform: scale(1.1);
+        }
+        .coin-card {
+            transition: all 0.3s ease;
+        }
+        .coin-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .chart-container {
+            position: relative;
+            height: calc(100vh - 200px);
+        }
+        .analysis-section {
+            display: none;
+            transition: all 0.3s ease;
+        }
+        .analysis-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .main-content {
+            display: flex;
+            flex-wrap: nowrap;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        .input-section {
+            flex: 0 0 33.333333%;
+            max-width: 33.333333%;
+        }
+        .chart-section {
+            flex: 0 0 66.666667%;
+            max-width: 66.666667%;
+        }
+        .analyzing .input-section {
+            flex: 0 0 25%;
+            max-width: 25%;
+        }
+        .analyzing .chart-section {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+        .analyzing .analysis-section {
+            flex: 0 0 25%;
+            max-width: 25%;
+            display: block;
+        }
+        @media (max-width: 768px) {
+            .main-content {
+                flex-wrap: wrap;
+            }
+            .input-section, .chart-section, .analysis-section {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+            .analyzing .input-section,
+            .analyzing .chart-section,
+            .analyzing .analysis-section {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navbar -->
+    <nav class="bg-gray-900 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <div class="font-bold text-xl flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    CryptoAnalyzer
+                </div>
+            </div>
+            <div class="flex space-x-4">
+                <button class="px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 transition">Login</button>
+                <button class="px-4 py-2 bg-transparent border border-white rounded hover:bg-gray-800 transition">About Us</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mx-auto p-4 main-content" id="mainContent">
+        <!-- Left Section - Input Form -->
+        <div class="input-section pr-0 md:pr-4 mb-6 md:mb-0">
+            <div class="bg-white p-6 rounded-lg shadow-md h-full">
+                <h2 class="text-xl font-bold mb-4">Analysis Parameters</h2>
+                
+                <form id="analysisForm">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2" for="marketType">Market Type</label>
+                        <select id="marketType" class="w-full p-2 border rounded">
+                            <option value="spot">Spot</option>
+                            <option value="futures">Futures</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2" for="coinName">Coin Pair</label>
+                        <input type="text" id="coinName" class="w-full p-2 border rounded" placeholder="BTCUSDT">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2" for="positionType">Position Type</label>
+                        <select id="positionType" class="w-full p-2 border rounded">
+                            <option value="long">Long</option>
+                            <option value="short">Short</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2" for="timeframe">Timeframe</label>
+                        <div class="flex">
+                            <select id="timeframeUnit" class="w-1/3 p-2 border rounded mr-2">
+                                <option value="minutes">Minutes</option>
+                                <option value="hours">Hours</option>
+                                <option value="days">Days</option>
+                            </select>
+                            <select id="timeframeValue" class="w-2/3 p-2 border rounded">
+                                <option value="1">1</option>
+                                <option value="3">3</option>
+                                <option value="5">5</option>
+                                <option value="15">15</option>
+                                <option value="30">30</option>
+                                <option value="45">45</option>
+                                <option value="60">60</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition">
+                        Analyze
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Middle Section - Chart Display -->
+        <div class="chart-section pl-0 md:pl-4">
+            <div class="bg-white p-6 rounded-lg shadow-md h-full">
+                <!-- Slider Toggle -->
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold" id="chartTitle">Market Overview</h2>
+                    <div class="slider-arrow" id="sliderToggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Coin Slider (Visible by default) -->
+                <div class="coin-slider active" id="coinSlider">
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <!-- Coin Cards -->
+                        <div class="coin-card bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div class="flex items-center mb-2">
+                                <div class="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center mr-2">
+                                    <span class="font-bold text-white">B</span>
+                                </div>
+                                <h3 class="font-semibold">BTC/USDT</h3>
+                            </div>
+                            <p class="text-2xl font-bold">$42,356.78</p>
+                            <p class="text-sm text-green-600">↑ 2.34%</p>
+                        </div>
+                        
+                        <div class="coin-card bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div class="flex items-center mb-2">
+                                <div class="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center mr-2">
+                                    <span class="font-bold text-white">E</span>
+                                </div>
+                                <h3 class="font-semibold">ETH/USDT</h3>
+                            </div>
+                            <p class="text-2xl font-bold">$2,856.42</p>
+                            <p class="text-sm text-green-600">↑ 1.78%</p>
+                        </div>
+                        
+                        <div class="coin-card bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div class="flex items-center mb-2">
+                                <div class="w-8 h-8 bg-blue-400 rounded-full flex items-center justify-center mr-2">
+                                    <span class="font-bold text-white">S</span>
+                                </div>
+                                <h3 class="font-semibold">SOL/USDT</h3>
+                            </div>
+                            <p class="text-2xl font-bold">$102.56</p>
+                            <p class="text-sm text-red-600">↓ 0.89%</p>
+                        </div>
+                        
+                        <div class="coin-card bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div class="flex items-center mb-2">
+                                <div class="w-8 h-8 bg-purple-400 rounded-full flex items-center justify-center mr-2">
+                                    <span class="font-bold text-white">A</span>
+                                </div>
+                                <h3 class="font-semibold">ADA/USDT</h3>
+                            </div>
+                            <p class="text-2xl font-bold">$1.25</p>
+                            <p class="text-sm text-green-600">↑ 3.12%</p>
+                        </div>
+                        
+                        <div class="coin-card bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div class="flex items-center mb-2">
+                                <div class="w-8 h-8 bg-pink-400 rounded-full flex items-center justify-center mr-2">
+                                    <span class="font-bold text-white">D</span>
+                                </div>
+                                <h3 class="font-semibold">DOT/USDT</h3>
+                            </div>
+                            <p class="text-2xl font-bold">$28.34</p>
+                            <p class="text-sm text-red-600">↓ 1.45%</p>
+                        </div>
+                        
+                        <div class="coin-card bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div class="flex items-center mb-2">
+                                <div class="w-8 h-8 bg-red-400 rounded-full flex items-center justify-center mr-2">
+                                    <span class="font-bold text-white">X</span>
+                                </div>
+                                <h3 class="font-semibold">XRP/USDT</h3>
+                            </div>
+                            <p class="text-2xl font-bold">$0.78</p>
+                            <p class="text-sm text-green-600">↑ 0.56%</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center text-gray-500">
+                        <p>Select a coin or enter a pair above to analyze</p>
+                    </div>
+                </div>
+                
+                <!-- TradingView Chart (Hidden by default) -->
+                <div class="chart-container">
+                    <div class="tradingview-widget-container hidden" id="tradingViewChart">
+                        <div id="tradingview_chart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Section - Analysis Results (Hidden by default) -->
+        <div class="analysis-section pl-0 md:pl-4" id="analysisResults">
+            <div class="bg-white p-6 rounded-lg shadow-md h-full">
+                <h2 class="text-xl font-bold mb-4">Analysis Results</h2>
+                <div class="space-y-4 overflow-y-auto" style="max-height: calc(100vh - 280px)">
+                    <p class="text-gray-700">1. The coin is currently in an uptrend based on the 50-day moving average.</p>
+                    <p class="text-gray-700">2. RSI indicator shows the asset is neither overbought nor oversold.</p>
+                    <p class="text-gray-700">3. Volume has increased by 15% compared to the 30-day average.</p>
+                    <p class="text-gray-700">4. MACD shows bullish momentum with the signal line crossing above.</p>
+                    <p class="text-gray-700">5. Support level identified at $38,500 based on recent price action.</p>
+                    <p class="text-gray-700">6. Resistance appears strong at the $44,200 level.</p>
+                    <p class="text-gray-700">7. Fibonacci retracement suggests potential reversal at 61.8% level.</p>
+                    <p class="text-gray-700">8. Bollinger Bands indicate volatility is increasing.</p>
+                    <p class="text-gray-700">9. The current price is above both the 50 and 200 EMA lines.</p>
+                    <p class="text-gray-700">10. On-chain data shows increasing accumulation by large holders.</p>
+                    <p class="text-gray-700">11. Exchange netflow indicates more coins leaving exchanges than entering.</p>
+                    <p class="text-gray-700">12. Funding rates are neutral, suggesting balanced market sentiment.</p>
+                    <p class="text-gray-700">13. Historical data shows strong performance during this market cycle phase.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize TradingView widget
+        function initTradingViewChart(symbol, interval) {
+            // Remove existing chart if it exists
+            if (window.tvWidget) {
+                window.tvWidget.remove();
+            }
+            
+            // Create new widget
+            window.tvWidget = new TradingView.widget({
+                "autosize": true,
+                "symbol": symbol,
+                "interval": interval,
+                "timezone": "Etc/UTC",
+                "theme": "light",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "hide_top_toolbar": false,
+                "hide_side_toolbar": false,
+                "allow_symbol_change": true,
+                "save_image": true,
+                "container_id": "tradingview_chart",
+                "height": "100%",
+                "width": "100%"
+            });
+        }
+
+        // Toggle between coin slider and chart
+        document.getElementById('sliderToggle').addEventListener('click', function() {
+            const coinSlider = document.getElementById('coinSlider');
+            const tradingViewChart = document.getElementById('tradingViewChart');
+            
+            coinSlider.classList.toggle('active');
+            tradingViewChart.classList.toggle('hidden');
+            
+            // Update the icon
+            const icon = this.querySelector('svg');
+            if (coinSlider.classList.contains('active')) {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />';
+                document.getElementById('chartTitle').textContent = 'Market Overview';
+            } else {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />';
+                
+                // If we have a symbol, update the title
+                const symbol = document.getElementById('coinName').value;
+                if (symbol) {
+                    const marketType = document.getElementById('marketType').value;
+                    document.getElementById('chartTitle').textContent = `${symbol.toUpperCase()} ${marketType === 'futures' ? 'Perpetual' : ''} Chart`;
+                }
+            }
+        });
+
+        // Update timeframe options based on selected unit
+        document.getElementById('timeframeUnit').addEventListener('change', function() {
+            const unit = this.value;
+            const valueSelect = document.getElementById('timeframeValue');
+            
+            // Clear existing options
+            valueSelect.innerHTML = '';
+            
+            // Add options based on selected unit
+            if (unit === 'minutes') {
+                addOption(valueSelect, '1', '1');
+                addOption(valueSelect, '3', '3');
+                addOption(valueSelect, '5', '5');
+                addOption(valueSelect, '15', '15');
+                addOption(valueSelect, '30', '30');
+                addOption(valueSelect, '45', '45');
+            } else if (unit === 'hours') {
+                addOption(valueSelect, '1', '1');
+                addOption(valueSelect, '2', '2');
+                addOption(valueSelect, '4', '4');
+                addOption(valueSelect, '6', '6');
+                addOption(valueSelect, '8', '8');
+                addOption(valueSelect, '12', '12');
+            } else if (unit === 'days') {
+                addOption(valueSelect, '1', '1');
+                addOption(valueSelect, '3', '3');
+                addOption(valueSelect, '7', '7');
+                addOption(valueSelect, '30', '30');
+            }
+        });
+
+        function addOption(selectElement, value, text) {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = text;
+            selectElement.appendChild(option);
+        }
+
+        // Form submission handler
+        document.getElementById('analysisForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const coinPair = document.getElementById('coinName').value.toUpperCase();
+            const marketType = document.getElementById('marketType').value;
+            const positionType = document.getElementById('positionType').value;
+            const timeframeUnit = document.getElementById('timeframeUnit').value;
+            const timeframeValue = document.getElementById('timeframeValue').value;
+            
+            // Validate coin pair
+            if (!coinPair) {
+                alert('Please enter a coin pair (e.g., BTCUSDT)');
+                return;
+            }
+            
+            // Map timeframe to TradingView format
+            const timeframeMap = {
+                'minutes': {
+                    '1': '1',
+                    '3': '3',
+                    '5': '5',
+                    '15': '15',
+                    '30': '30',
+                    '45': '45'
+                },
+                'hours': {
+                    '1': '60',
+                    '2': '120',
+                    '4': '240',
+                    '6': '360',
+                    '8': '480',
+                    '12': '720'
+                },
+                'days': {
+                    '1': 'D',
+                    '3': '3D',
+                    '7': 'W',
+                    '30': 'M'
+                }
+            };
+            
+            // Get the TradingView interval
+            let tvInterval = 'D'; // Default to daily
+            if (timeframeMap[timeframeUnit] && timeframeMap[timeframeUnit][timeframeValue]) {
+                tvInterval = timeframeMap[timeframeUnit][timeframeValue];
+            }
+            
+            // Hide coin slider and show chart
+            document.getElementById('coinSlider').classList.remove('active');
+            document.getElementById('tradingViewChart').classList.remove('hidden');
+            
+            // Show analysis results section
+            document.getElementById('analysisResults').classList.add('active');
+            
+            // Shift to analyzing layout
+            document.getElementById('mainContent').classList.add('analyzing');
+            
+            // Update chart title
+            document.getElementById('chartTitle').textContent = `${coinPair} ${marketType === 'futures' ? 'Perpetual' : ''} Chart`;
+            
+            // Initialize TradingView chart with the selected coin
+            const symbolPrefix = 'BINANCE:';
+            const symbolSuffix = marketType === 'futures' ? 'PERP' : '';
+            const fullSymbol = `${symbolPrefix}${coinPair}${symbolSuffix}`;
+            
+            initTradingViewChart(fullSymbol, tvInterval);
+            
+            // Update the toggle icon to show "X"
+            const icon = document.querySelector('#sliderToggle svg');
+            icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />';
+            
+            // In a real app, you would send this data to your backend for analysis
+            console.log('Analysis requested:', {
+                marketType,
+                coinPair,
+                positionType,
+                timeframe: `${timeframeValue} ${timeframeUnit}`,
+                tradingViewSymbol: fullSymbol,
+                tradingViewInterval: tvInterval
+            });
+        });
+
+        // Make coin cards clickable to load that coin's chart
+        document.querySelectorAll('.coin-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const coinPair = this.querySelector('h3').textContent;
+                document.getElementById('coinName').value = coinPair.split('/')[0];
+                
+                // Trigger form submission
+                document.getElementById('analysisForm').dispatchEvent(new Event('submit'));
+            });
+        });
+
+        // Initialize timeframe options
+        document.getElementById('timeframeUnit').dispatchEvent(new Event('change'));
+    </script>
+</body>
+</html>
