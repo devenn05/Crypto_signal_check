@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Analysis Tool Quick Guide</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #e6e6e6;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            color: #f8f8f8;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        h2 {
+            color: #4facfe;
+            margin-top: 2rem;
+            font-size: 1.8rem;
+            border-bottom: 2px solid rgba(79, 172, 254, 0.3);
+            padding-bottom: 0.5rem;
+        }
+        
+        h3 {
+            color: #00f2fe;
+            margin-top: 1.5rem;
+            font-size: 1.4rem;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px 0 rgba(0, 0, 0, 0.2);
+        }
+        
+        .steps {
+            counter-reset: step-counter;
+        }
+        
+        .step {
+            position: relative;
+            padding-left: 3rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .step:before {
+            counter-increment: step-counter;
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .confidence-levels {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        
+        .confidence-level {
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .extreme {
+            background: linear-gradient(135deg, rgba(46, 213, 115, 0.2) 0%, rgba(46, 213, 115, 0.4) 100%);
+            border: 1px solid #2ed573;
+        }
+        
+        .high {
+            background: linear-gradient(135deg, rgba(30, 144, 255, 0.2) 0%, rgba(30, 144, 255, 0.4) 100%);
+            border: 1px solid #1e90ff;
+        }
+        
+        .solid {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.2) 0%, rgba(255, 165, 0, 0.4) 100%);
+            border: 1px solid #ffa500;
+        }
+        
+        .caution {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 193, 7, 0.4) 100%);
+            border: 1px solid #ffc107;
+        }
+        
+        .loss {
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.2) 0%, rgba(255, 71, 87, 0.4) 100%);
+            border: 1px solid #ff4757;
+        }
+        
+        .indicator {
+            margin-bottom: 2rem;
+        }
+        
+        .indicator-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .indicator-number {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            width: 1.8rem;
+            height: 1.8rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.8rem;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .signal {
+            display: flex;
+            align-items: flex-start;
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            border-radius: 6px;
+        }
+        
+        .long {
+            background-color: rgba(46, 213, 115, 0.1);
+            border-left: 4px solid #2ed573;
+        }
+        
+        .short {
+            background-color: rgba(255, 71, 87, 0.1);
+            border-left: 4px solid #ff4757;
+        }
+        
+        .signal-emoji {
+            margin-right: 0.8rem;
+            font-size: 1.2rem;
+        }
+        
+        .warning {
+            background: rgba(255, 193, 7, 0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid #ffc107;
+            margin: 2rem 0;
+            font-weight: 600;
+        }
+        
+        .emoji {
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .confidence-levels {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Quick Guide to Using the Trading Analysis Tool</h1>
+            <p>Make informed trading decisions with confidence using our comprehensive analysis tool</p>
+        </header>
+        
+        <section class="card">
+            <h2>How to Use the Tool</h2>
+            <div class="steps">
+                <div class="step">
+                    <strong>Market Type:</strong> Choose Spot or Futures. For futures trading (betting on price up or down), select Futures. For spot trading (buying expecting price to go up), select Spot.
+                </div>
+                <div class="step">
+                    <strong>Token Name:</strong> Type the cryptocurrency pair symbol in the format TOKENUSDT (e.g., BTCUSDT for Bitcoin).
+                </div>
+                <div class="step">
+                    <strong>Trade/Trend Direction:</strong><br>
+                    • Futures: Select Long if you think the price will go up, Short if you think it will go down.<br>
+                    • Spot: Select Long if you expect an Uptrend (price going up).
+                </div>
+                <div class="step">
+                    <strong>Timeframe:</strong> Choose the time interval for analysis (e.g., 1m, 1H, 1D).
+                </div>
+                <div class="step">
+                    <strong>Analyze:</strong> Click the Analyze button.
+                </div>
+                <div class="step">
+                    <strong>See Results (Use Caution!):</strong> The tool shows signals from 12 indicators.
+                </div>
+            </div>
+        </section>
+        
+        <section class="card">
+            <h2>Confidence Levels</h2>
+            <div class="confidence-levels">
+                <div class="confidence-level extreme">
+                    <span class="emoji">🚀🚀🚀</span><br>
+                    <strong>9+ agreeing indicators:</strong><br>
+                    Extreme Confidence
+                </div>
+                <div class="confidence-level high">
+                    <span class="emoji">🚀🚀</span><br>
+                    <strong>7-9 agreeing indicators:</strong><br>
+                    High Confidence
+                </div>
+                <div class="confidence-level solid">
+                    <span class="emoji">🚀</span><br>
+                    <strong>6 agreeing indicators:</strong><br>
+                    Solid
+                </div>
+                <div class="confidence-level caution">
+                    <span class="emoji">⚠️</span><br>
+                    <strong>4-6 mixed indicators:</strong><br>
+                    Caution
+                </div>
+                <div class="confidence-level loss">
+                    <span class="emoji">🛑</span><br>
+                    <strong>Below 4 agreeing indicators:</strong><br>
+                    Confirm LOSS
+                </div>
+            </div>
+            
+            <div class="warning">
+                ⚠️ Remember: This is not guaranteed profit. Trade with caution and do your own research!
+            </div>
+        </section>
+        
+        <section class="card">
+            <h2>12 Indicators Explained</h2>
+            
+            <div class="indicator">
+                <div class="indicator-title">
+                    <div class="indicator-number">1</div>
+                    <h3>ADX TREND STRENGTH</h3>
+                </div>
+                <p>This tells you how strong the current trend (whether the price is generally going up or down) is.</p>
+                <div class="signal long">
+                    <span class="signal-emoji">🟢</span>
+                    <div><strong>LONG (Buy):</strong> If the trend is STRONG (the ADX number is above 25) AND a line called "+DI" is above another line called "-DI", it suggests the price might keep going up, so maybe it's a good time to buy.</div>
+                </div>
+                <div class="signal short">
+                    <span class="signal-emoji">🔴</span>
+                    <div><strong>SHORT (Sell):</strong> If the trend is STRONG (ADX > 25) BUT the "-DI" line is above the "+DI" line, it suggests the price might keep going down, so maybe it's a good time to sell.</div>
+                </div>
+            </div>
+            
+            <div class="indicator">
+                <div class="indicator-title">
+                    <div class="indicator-number">2</div>
+                    <h3>EMA Cross</h3>
+                </div>
+                <p>EMA stands for Exponential Moving Average. It's like an average price over a certain period, but it gives more weight to recent prices. We have two EMAs here: EMA50 (average of the last 50 periods) and EMA200 (average of the last 200 periods).</p>
+                <div class="signal long">
+                    <span class="signal-emoji">🟢</span>
+                    <div><strong>LONG (Buy) - Golden Cross:</strong> When the shorter-term average (EMA50) crosses above the longer-term average (EMA200), it's called a Golden Cross. This is often seen as a sign that the price might start going up.</div>
+                </div>
+                <div class="signal short">
+                    <span class="signal-emoji">🔴</span>
+                    <div><strong>SHORT (Sell) - Death Cross:</strong> When the shorter-term average (EMA50) crosses below the longer-term average (EMA200), it's called a Death Cross. This is often seen as a sign that the price might start going down.</div>
+                </div>
+            </div>
+            
+            <!-- Continue with the rest of the indicators in the same pattern -->
+            <!-- Indicator 3 -->
+            <div class="indicator">
+                <div class="indicator-title">
+                    <div class="indicator-number">3</div>
+                    <h3>Money Flow</h3>
+                </div>
+                <p>This tries to see if "smart money" (big, informed investors) is buying or selling.</p>
+                <div class="signal long">
+                    <span class="signal-emoji">🟢</span>
+                    <div><strong>LONG (Buy):</strong> Negative flow means smart money might be leaving, which can sometimes indicate the price has gone down too much and might be ready to go up (like a bounce).</div>
+                </div>
+                <div class="signal short">
+                    <span class="signal-emoji">🔴</span>
+                    <div><strong>SHORT (Sell):</strong> Positive flow means a lot of money is coming in, which can sometimes indicate the price has gone up too much and might be ready to go down.</div>
+                </div>
+            </div>
+            
+            <!-- Indicator 4 -->
+            <div class="indicator">
+                <div class="indicator-title">
+                    <div class="indicator-number">4</div>
+                    <h3>Market Mood</h3>
+                </div>
+                <p>This looks at the overall feeling of investors.</p>
+                <div class="signal long">
+                    <span class="signal-emoji">🟢</span>
+                    <div><strong>LONG (Buy) - Extreme FEAR (oversold):</strong> When everyone is very scared (extreme fear), it might mean the price has dropped too low and could be a good time to buy, hoping for a recovery. This is also called "oversold."</div>
+                </div>
+                <div class="signal short">
+                    <span class="signal-emoji">🔴</span>
+                    <div><strong>SHORT (Sell) - Extreme GREED (overbought):</strong> When everyone is very excited and greedy (extreme greed), it might mean the price has gone too high and could be a good time to sell, expecting a pullback. This is also called "overbought."</div>
+                </div>
+            </div>
+            
+            <!-- Continue with indicators 5-12 following the same pattern -->
+            <!-- For brevity, I'll show one more example -->
+            
+            <!-- Indicator 5 -->
+            <div class="indicator">
+                <div class="indicator-title">
+                    <div class="indicator-number">5</div>
+                    <h3>Miners' Move</h3>
+                </div>
+                <p>This refers to people who "mine" cryptocurrencies. Their actions can sometimes give clues about the market.</p>
+                <div class="signal long">
+                    <span class="signal-emoji">🟢</span>
+                    <div><strong>LONG (Buy):</strong> If miners are holding onto their coins, it could suggest they expect the price to go up.</div>
+                </div>
+                <div class="signal short">
+                    <span class="signal-emoji">🔴</span>
+                    <div><strong>SHORT (Sell):</strong> If miners are selling off a lot of their coins ("dumping"), it could suggest they expect the price to go down.</div>
+                </div>
+            </div>
+            
+                        <!-- Indicator 6 -->
+                        <div class="indicator">
+                            <div class="indicator-title">
+                                <div class="indicator-number">6</div>
+                                <h3>MACD (Moving Average Convergence Divergence)</h3>
+                            </div>
+                            <p>This indicator uses moving averages to spot potential changes in price momentum. It has a "MACD line" and a "Signal line."</p>
+                            <div class="signal long">
+                                <span class="signal-emoji">🟢</span>
+                                <div><strong>LONG (Buy):</strong> When the MACD line crosses above the Signal line, it's seen as a bullish (price going up) signal.</div>
+                            </div>
+                            <div class="signal short">
+                                <span class="signal-emoji">🔴</span>
+                                <div><strong>SHORT (Sell):</strong> When the MACD line crosses below the Signal line, it's seen as a bearish (price going down) signal.</div>
+                            </div>
+                        </div>
+            
+                        <!-- Indicator 7 -->
+                        <div class="indicator">
+                            <div class="indicator-title">
+                                <div class="indicator-number">7</div>
+                                <h3>Volume Zones</h3>
+                            </div>
+                            <p>Volume tells you how much of a particular asset is being traded. High volume at certain price levels can create "support" (a price where buyers tend to step in) or "resistance" (a price where sellers tend to step in).</p>
+                            <div class="signal long">
+                                <span class="signal-emoji">🟢</span>
+                                <div><strong>LONG (Buy):</strong> If the price is near a price level where there has been a lot of buying in the past (high volume support), it might suggest the price will bounce back up.</div>
+                            </div>
+                            <div class="signal short" style="border-left-color: #ffa500;">
+                                <span class="signal-emoji">🟠</span>
+                                <div><strong>SHORT (Sell) - In weak resistance territory:</strong> If the price is in an area where there hasn't been a lot of strong selling in the past (weak resistance), it might be a riskier place to sell, as the price might push through.</div>
+                            </div>
+                        </div>
+            
+                        <!-- Indicator 8 -->
+                        <div class="indicator">
+                            <div class="indicator-title">
+                                <div class="indicator-number">8</div>
+                                <h3>RSI (Relative Strength Index)</h3>
+                            </div>
+                            <p>This measures how overbought or oversold an asset is on a scale of 0 to 100.</p>
+                            <div class="signal long">
+                                <span class="signal-emoji">🟢</span>
+                                <div><strong>LONG (Buy):</strong> If the RSI is below 30, it's often considered "oversold," suggesting the price might be due for a bounce upwards.</div>
+                            </div>
+                            <div class="signal short">
+                                <span class="signal-emoji">🔴</span>
+                                <div><strong>SHORT (Sell):</strong> If the RSI is above 70, it's often considered "overbought," suggesting the price might be due for a pullback downwards.</div>
+                            </div>
+                        </div>
+            
+                        <!-- Indicator 9 -->
+                        <div class="indicator">
+                            <div class="indicator-title">
+                                <div class="indicator-number">9</div>
+                                <h3>Smart Money</h3>
+                            </div>
+                            <p>Similar to "Money Flow," this looks at the actions of big, sophisticated investors.</p>
+                            <div class="signal long">
+                                <span class="signal-emoji">🟢</span>
+                                <div><strong>LONG (Buy):</strong> If big players are buying, it's often seen as a positive sign for the price.</div>
+                            </div>
+                            <div class="signal short">
+                                <span class="signal-emoji">🔴</span>
+                                <div><strong>SHORT (Sell):</strong> If big players ("whales") are selling, it's often seen as a negative sign for the price.</div>
+                            </div>
+                        </div>
+            
+                        <!-- Indicator 10 -->
+                        <div class="indicator">
+                            <div class="indicator-title">
+                                <div class="indicator-number">10</div>
+                                <h3>Whale Watching</h3>
+                            </div>
+                            <p>This specifically tracks very large trades made by "whales" (investors with a lot of money).</p>
+                            <div class="signal long">
+                                <span class="signal-emoji">🟢</span>
+                                <div><strong>LONG (Buy):</strong> If the total amount of whale buys is significantly more than their sells (more than 1.5 times), it could suggest positive sentiment from big players.</div>
+                            </div>
+                            <div class="signal short">
+                                <span class="signal-emoji">🔴</span>
+                                <div><strong>SHORT (Sell):</strong> If the total amount of whale sells is significantly more than their buys (more than 1.5 times), it could suggest negative sentiment from big players.</div>
+                            </div>
+                        </div>
+            
+                        <!-- Indicator 11 -->
+                        <div class="indicator">
+                            <div class="indicator-title">
+                                <div class="indicator-number">11</div>
+                                <h3>Stoch RSI (Stochastic Relative Strength Index)</h3>
+                            </div>
+                            <p>This is like a more sensitive version of the RSI, also measuring overbought and oversold conditions. It ranges from 0 to 100.</p>
+                            <div class="signal long">
+                                <span class="signal-emoji">🟢</span>
+                                <div><strong>LONG (Buy):</strong> If the StochRSI is below 20, it's considered oversold and might signal a potential upward move.</div>
+                            </div>
+                            <div class="signal short">
+                                <span class="signal-emoji">🔴</span>
+                                <div><strong>SHORT (Sell):</strong> If the StochRSI is above 80, it's considered overbought and might signal a potential downward move.</div>
+                            </div>
+                        </div>
+            
+                        <!-- Indicator 12 -->
+                        <div class="indicator">
+                            <div class="indicator-title">
+                                <div class="indicator-number">12</div>
+                                <h3>Support/Resistance</h3>
+                            </div>
+                            <p>These are key price levels where the price has historically tended to stop or reverse.</p>
+                            <div class="signal long">
+                                <span class="signal-emoji">🟢</span>
+                                <div><strong>LONG (Buy):</strong> If the price is near a support level, it might suggest that buying pressure will increase and prevent the price from falling further.</div>
+                            </div>
+                            <div class="signal short">
+                                <span class="signal-emoji">🔴</span>
+                                <div><strong>SHORT (Sell):</strong> If the price is near a resistance level, it might suggest that selling pressure will increase and prevent the price from rising further.</div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <div class="warning">
+                        💡 Remember: Trading involves risk. Always do your own research and consider your risk tolerance before making any trades.
+                    </div>
+                </div>
+            </body>
+            </html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Analysis Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Federo&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://s3.tradingview.com/tv.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="video-background">
+        <video autoplay muted loop id="bgVideo">
+            <source src="bg.mp4" type="video/mp4">
+        </video>
+        <div class="video-overlay"></div>
+    </div>
+    <!-- Navbar -->
+<nav class="navbar">
+    <div class="container">
+        <a href="#" class="nav-link brand">CryptoAnalyzer</a>
+        <div class="nav-links">
+            <a href="potential_signals.html" class="nav-link">Potential Signals</a>
+            <a href="user_guide.html" class="nav-link">User Guide</a>
+        </div>
+    </div>
+</nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Input and Cheat Sheet Section -->
+        <div class="input-cheatsheet-section" id="inputCheatsheetSection">
+            <div class="input-card">
+                <h2>Analysis Parameters</h2>
+                <form id="analysisForm">
+                    <div class="form-group">
+                        <label for="marketType">Market Type</label>
+                        <select id="marketType">
+                            <option value="spot">Spot</option>
+                            <option value="futures">Futures</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="coinName">Coin Pair</label>
+                        <input type="text" id="coinName" placeholder="BTCUSDT">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="positionType">Position Type</label>
+                        <select id="positionType">
+                            <option value="long">Long</option>
+                            <option value="short">Short</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="timeframe">Timeframe</label>
+                        <select id="timeframe" class="timeframe-select">
+                            <!-- Minutes -->
+                            <option value="1m">1 Minute</option>
+                            <option value="3m">3 Minutes</option>
+                            <option value="5m">5 Minutes</option>
+                            <option value="15m">15 Minutes</option>
+                            <option value="30m">30 Minutes</option>
+                            <!-- Hours -->
+                            <option value="1h">1 Hour</option>
+                            <option value="2h">2 Hours</option>
+                            <option value="4h">4 Hours</option>
+                            <option value="6h">6 Hours</option>
+                            <option value="8h">8 Hours</option>
+                            <option value="12h">12 Hours</option>
+                            <!-- Days -->
+                            <option value="1d">1 Day</option>
+                            <option value="3d">3 Days</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="analyze-btn">
+                        <span id="submitText">Analyze</span>
+                    </button>
+                    <div id="errorMessage" class="error-message"></div> <!-- Add this line -->                    
+                </form>
+            </div>
+
+            <div class="cheatsheet-card">
+                <h2>Trading Cheat Sheet</h2>
+                <div class="cheatsheet-content" id="cheatsheetContent">
+                    <!-- Cheat sheet content will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section (Initially hidden) -->
+        <div class="results-section" id="resultsSection">
+            <div class="chart-container">
+                <div id="tradingview_chart"></div>
+            </div>
+            <div class="analysis-results">
+                <h2>Analysis Results</h2>
+                <div class="console-output" id="consoleOutput"></div>
+                <button id="backButton" class="back-btn">Back to Analysis</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
